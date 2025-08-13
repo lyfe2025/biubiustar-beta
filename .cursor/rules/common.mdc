@@ -1,0 +1,172 @@
+---
+description: 本仓库全部后端（ThinkPHP + FastAdmin）与后台前端（Assets/JS 模块）
+alwaysApply: false
+---
+# FastAdmin 项目规则
+
+参考文档：
+- FastAdmin 官方文档（总览）：https://doc.fastadmin.net/doc
+- CRUD 脚手架：https://doc.fastadmin.net/doc/crud.html
+- 数据库规范：https://doc.fastadmin.net/doc/database.html
+
+---
+
+## 1. 目录结构约定
+- 核心目录：
+  - `application/admin`：后台业务（控制器/模型/验证/视图）
+  - `application/api`：API 业务模块
+  - `application/common`：通用基类、库、异常等
+  - `public/assets`：静态资源与后台前端 JS（`assets/js/backend`）
+  - `addons`：插件目录（每个插件是一个完整的 FastAdmin 子模块）
+  - `vendor`：Composer 依赖
+  - `public/index.php`：入口文件
+- 视图目录：`application/admin/view/<模块>/<控制器>/<动作>.html`
+- 后台 JS：`public/assets/js/backend/<模块>/<控制器>.js`
+- 插件视图与控制器：存放于 `addons/<插件名>/`
+
+## 2. 命名规范
+- 类名：帕斯卡命名（`PascalCase`），例如 `Category`, `ProductSku`。
+- 控制器：帕斯卡命名，文件名与类名一致。例如 `application/admin/controller/product/Category.php` -> `Category`。
+- 模型：帕斯卡命名，放在 `application/admin/model/<模块>/`。一个控制器通常配对同名模型。
+- 验证器：帕斯卡命名，放在 `application/admin/validate/<模块>/`。
+- 视图文件：小写加中划线或下划线均可，但需与控制器动作对应（`index/add/edit`）。
+- 数据表与字段：全小写 + 下划线（snake_case）。
+- 常用动作方法：`index`(列表)、`add`、`edit`、`del`、`multi`、回收站 `recyclebin/restore/destroy`。
+
+## 3. 控制器与路由约定
+- 列表页使用 Bootstrap Table，动作在控制器中暴露：
+  - `index`：渲染 + `Table.api.init({extend: {...}})` 对应后端 `index` 的 `url`。
+  - `add` / `edit`：表单页，绑定 `Form.api.bindevent`。
+  - `del` / `multi`：批量/单删，返回 JSON。
+- 路由使用默认规则即可。若自定义路由，遵循 REST 风格与权限节点一致。
+- 权限节点自动依据控制器/方法生成（见第 6 节）。
+
+## 4. 模型与数据访问
+- 模型类放置于 `application/admin/model/<模块>/`，命名与表语义一致。
+- 优先使用 FastAdmin/ThinkPHP ORM：查询构建器、关联关系、访问器/修改器。
+- 常用访问器/修改器：`getXxxAttr` 与 `setXxxAttr`，对时间、JSON、枚举字段进行转换。
+- 分页统一使用内置分页，返回给前端 `total` 与 `rows`。
+- 软删除：若表含 `deletetime` 字段（int），模型启用 `SoftDelete` 特征。
+
+## 5. 数据库设计规范
+- 字符集：`utf8mb4`；排序规则：`utf8mb4_general_ci`（或项目统一设定）。
+- 引擎：`InnoDB`。
+- 表命名：小写下划线，建议含模块前缀，如 `shop_category`、`shop_product`。
+- 主键：`id` INT UNSIGNED AUTO_INCREMENT，主键索引。
+- 时间戳：
+  - `createtime` INT(10) NULL 默认 NULL（创建时间，Unix 时间戳秒）
+  - `updatetime` INT(10) NULL 默认 NULL（更新时间）
+  - `deletetime` INT(10) NULL 默认 NULL（软删除时间；存在该字段即启用软删除）
+- 常用业务字段建议：
+  - `status` VARCHAR(30) NOT NULL DEFAULT 'normal'（状态：`normal`/`hidden` 等）
+  - `switch` TINYINT(1) NOT NULL DEFAULT 0（开关）
+  - `weigh` INT NOT NULL DEFAULT 0（排序权重，越大越靠前）
+  - `admin_id` INT UNSIGNED NOT NULL DEFAULT 0（数据归属，用于数据权限）
+  - `pid` INT UNSIGNED NOT NULL DEFAULT 0（树形父级）
+- JSON 字段：使用 TEXT 存储 + 模型层 `json`/访问器转换，或原生 JSON（受 MySQL 版本限制）。
+- 索引：
+  - 频繁查询字段建立普通索引：如 `status`、`weigh`、`admin_id`。
+  - 组合索引根据最左前缀原则设计。
+
+## 6. 权限与菜单
+- 权限节点：自动依据控制器/方法注册（`index/add/edit/del/multi/...`）。
+- 菜单：CRUD 生成时可自动写入后台菜单；也可在后台“菜单管理”中手动配置。
+- 数据行级权限：使用 `admin_id` 实现；前端通过 `Table.api.bindevent` 限制操作按钮展示，后端在模型/控制器过滤。
+
+## 7. 验证与多语言
+- 验证器：`application/admin/validate/<模块>/<名称>.php`，包含 `add`、`edit` 等场景。
+- 错误返回：统一 JSON，前端自动弹窗。
+- 多语言：
+  - 语言包：`application/admin/lang/<语言>/<模块>/<控制器>.php`
+  - 前端使用 `__('Key')`；后端使用 `__()`。
+
+## 8. CRUD 脚手架规范
+- 生成命令（示例，参数请按需替换）：
+
+```bash
+php think crud \
+  --table=shop_category \
+  --controller=shop/Category \
+  --model=app\\admin\\model\\shop\\Category \
+  --validate=app\\admin\\validate\\shop\\Category \
+  --force=1 \
+  --menu=1
+```
+
+- 推荐实践：
+  - 在建表时即加入 `createtime/updatetime/deletetime/weigh/status/admin_id/pid` 等规范字段，CRUD 可自动识别更多组件（时间区间、开关、回收站、数据权限等）。
+  - 列表页字段过多时，通过 `columns` 精简并开启列切换。
+  - 复杂筛选使用 `operate:'BETWEEN'/'LIKE'/'FIND_IN_SET'` 等（前端列配置）。
+  - 如使用回收站，控制器包含 `recyclebin/restore/destroy`。
+
+## 9. 后台前端规范（JS / 视图）
+- 文件位置：`public/assets/js/backend/<模块>/<控制器>.js`
+- 模块模板：
+  - 依赖：`define(['jquery','bootstrap','backend','table','form'], function ($, undefined, Backend, Table, Form) { ... })`
+  - `Controller.index`：初始化 `Table.api`，绑定事件；
+  - `Controller.add/Controller.edit`：`Form.api.bindevent($('form[role=form]'))`。
+- 表格：
+  - `Table.api.init({extend: {index_url, add_url, edit_url, del_url, multi_url, import_url, table}})`
+  - 列配置遵循后端字段；启用常见格式化器：`Table.api.formatter.status/switch/operate/buttons`。
+- 视图：`index.html`（列表）、`add.html`、`edit.html` 与表单片段复用。
+
+## 10. 插件规范（addons）
+- 结构：`addons/<插件名>/{controller,model,view,lang,bootstrap.js,config.html,...}`
+- 插件调用：
+  - 后端：`addons_url('插件名/控制器/方法', ['id'=>1])`
+  - 前端：通过生成的路由访问
+- 插件与主项目遵循同样的命名与数据库规范。
+
+## 11. 日志与异常
+- 使用内置日志：`Log::record`，级别按需设置；生产环境注意日志切割与清理。
+- 异常：业务异常返回 JSON 消息码与提示；系统异常保留统一错误页。
+
+## 12. 部署与配置
+- 环境变量：通过 `application/extra/*.php` 管理（如 `site.php`）；敏感信息走环境变量或配置中心。
+- 资源发布：静态资源置于 `public/assets`；CDN 可选。
+- 队列/计划任务：遵循 `think-queue` 与系统计划任务规范。
+
+## 13. Git 与代码质量
+- 提交信息语义化：`feat: ...` `fix: ...` `refactor: ...` `docs: ...` `chore: ...`
+- 严禁提交 `.env`、私钥、数据库转储等敏感文件。
+- 新增模块需附最小可用的 CRUD 与基础校验；复杂逻辑补充单元/集成测试（如适用）。
+
+## 14. 常见字段规范清单（建议）
+
+| 字段名 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| id | INT UNSIGNED | AUTO_INCREMENT | 主键 |
+| admin_id | INT UNSIGNED | 0 | 数据归属，用于数据权限 |
+| pid | INT UNSIGNED | 0 | 树形父级 |
+| status | VARCHAR(30) | 'normal' | 状态（normal/hidden/…）|
+| switch | TINYINT(1) | 0 | 开关 |
+| weigh | INT | 0 | 排序权重 |
+| createtime | INT(10) | NULL | 创建时间（Unix 秒）|
+| updatetime | INT(10) | NULL | 更新时间（Unix 秒）|
+| deletetime | INT(10) | NULL | 软删除时间（存在即启用软删除）|
+
+---
+
+## 15. 附：常用命令速查
+
+- 生成 CRUD（查看帮助）：
+
+```bash
+php think crud --help
+```
+
+- 典型生成（含菜单、可覆盖已有文件）：
+
+```bash
+php think crud --table=demo_article \
+  --controller=demo/Article \
+  --model=app\\admin\\model\\demo\\Article \
+  --validate=app\\admin\\validate\\demo\\Article \
+  --menu=1 --force=1
+```
+
+- 数据库迁移/建表：统一通过 SQL 脚本评审入库，并满足第 5、14 节字段规范。
+
+---
+
+注意：本规则文件以官方文档为准绳，如有冲突以官方最新文档为准。请在提交前对照本文件自检。

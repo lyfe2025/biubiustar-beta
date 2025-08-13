@@ -1,0 +1,540 @@
+---
+alwaysApply: true
+---
+## 🏗️ 模板结构规范
+
+### 基础模板继承
+所有页面模板必须继承基础模板，使用block定义内容区域：
+
+```html
+{extend name="base" /}
+
+{block name="main"}
+<!-- 页面具体内容 -->
+{/block}
+```
+
+### 公共组件引用
+使用include引用公共组件：
+
+```html
+{include file="head" /}         <!-- 头部引用 -->
+{include file="nav" /}          <!-- 导航菜单 -->
+{include file="footer" /}       <!-- 页脚 -->
+{include file="neinav" /}       <!-- 内页导航 -->
+{include file="nextprev" /}     <!-- 上下页导航 -->
+```
+
+---
+
+## 🏷️ LDCMS专用标签规范
+
+### 导航标签
+```html
+<!-- 主导航菜单 -->
+{ld:nav}
+<li>
+    <a href="{$item.url}" class="{if $topid==$item['id']} active {/if}">
+        {$item.name}
+    </a>
+    {if $item['child']}
+    <!-- 子菜单处理 -->
+    {ld:nav pid="$item['id']"}
+    <a href="{$item.url}">{$item.name}</a>
+    {/ld:nav}
+    {/if}
+</li>
+{/ld:nav}
+
+<!-- 面包屑导航 -->
+{ld:sort cid="$topid"}
+<div class="breadcrumb">
+    <span>{$item.ename}</span>
+    <h2>{$item.name}</h2>
+</div>
+{/ld:sort}
+```
+
+### 内容列表标签
+```html
+<!-- 内容列表 -->
+{ld:list cid="$cate['id']" limit='10' order='id desc'}
+<div class="content-item">
+    <h3><a href="{$item.url}">{$item.title}</a></h3>
+    <div class="meta">
+        <span><i class="fa fa-clock-o"></i> {$item.show_time}</span>
+        <span><i class="fa fa-eye"></i> {$item.visits}</span>
+    </div>
+    <p>{$item.seo_description|ld_str_cut=60}</p>
+    <img src="{$item.image}" alt="{$item.title}" />
+</div>
+{/ld:list}
+
+<!-- 分页 -->
+<div class="pagination">{$pages}</div>
+```
+
+### 轮播图标签
+```html
+{ld:slide name="banner"}
+<div class="slide-item">
+    {if $item.is_video}
+    <video poster="{$item.image}" src="{$item.video}" autoplay loop muted></video>
+    {else/}
+    <img src="{$item.image}" alt="{$item.title}">
+    {/if}
+    <div class="slide-content">
+        <h2>{$item.title}</h2>
+        <p>{$item.description}</p>
+        <a href="{$item.url}" target="{$item.target}">查看更多</a>
+    </div>
+</div>
+{/ld:slide}
+```
+
+### 标签云
+```html
+{ld:tags id="$content['id']" cid="$category['id']" limit='16'}
+<a href="{$item.url}" target="_blank">{$item.title}</a>
+{/ld:tags}
+```
+
+### 动态内容块
+```html
+{ld:action action="home_block" model_table_name="product" alias="cate"}
+<section class="product-section">
+    <h3>{$cate.name}</h3>
+    <p>{$cate.ename}</p>
+    
+    {ld:list cid="$cate['id']" limit='8'}
+    <div class="product-item">
+        <img src="{$item.image}" alt="{$item.title}" />
+        <h4>{$item.title}</h4>
+        <p>{$item.description}</p>
+    </div>
+    {/ld:list}
+</section>
+{/ld:action}
+```
+
+---
+
+## 🔗 URL和资源引用规范
+
+### URL生成
+```html
+<!-- 插件URL生成 -->
+<a href="{:addon_url('ldcms/index/index')}">首页</a>
+<a href="{:addon_url('ldcms/search/index')}">搜索</a>
+
+<!-- 内容URL（自动生成） -->
+<a href="{$item.url}">{$item.title}</a>
+<a href="{$cate.url}">{$cate.name}</a>
+```
+
+### 资源路径引用
+```html
+<!-- 插件资源 -->
+<link rel="stylesheet" href="__ADDON__/ldcms2025/css/style.min.css" />
+<script src="__ADDON__/ldcms2025/js/styles.js"></script>
+<img src="__ADDON__/ldcms2025/images/logo.png" alt="Logo" />
+
+<!-- CDN资源 -->
+<link rel="stylesheet" href="__CDN__/assets/libs/font-awesome/css/font-awesome.min.css" />
+<script src="__CDN__/assets/libs/jquery/dist/jquery.min.js"></script>
+
+<!-- 图片CDN处理 -->
+<img src="{$item.image|cdnurl}" alt="{$item.title}" />
+<img src="{$ld.logo1|cdnurl}" alt="{$ld.sitetitle}" />
+```
+
+### 第三方库引用
+```html
+<!-- Bootstrap框架 -->
+<link rel="stylesheet" href="__ADDON__/libs/bootstrap/bootstrap.min.css" />
+
+<!-- Swiper轮播 -->
+<link rel="stylesheet" href="__ADDON__/libs/swiper/swiper-bundle.min.css" />
+<script src="__ADDON__/libs/swiper/swiper-bundle.min.js"></script>
+
+<!-- 动画库 -->
+<link rel="stylesheet" href="__ADDON__/libs/animate.min.css" />
+<script src="__ADDON__/libs/wow.min.js"></script>
+
+<!-- Layer弹窗 -->
+<script src="__CDN__/assets/libs/fastadmin-layer/dist/layer.js"></script>
+```
+
+---
+
+## 🌍 多语言处理规范
+
+### 多语言文本处理
+```html
+<!-- 静态文本多语言 -->
+<a href="/">{:__('Home')}</a>
+<button type="submit">{:__('Search')}</button>
+<span>{:__('Please enter keywords')}</span>
+
+<!-- 语言切换菜单 -->
+<div class="lang-wrapper">
+    <div class="lang-btn">
+        <span class="lang-text">{$ld.langs[$ld.lg]}</span>
+    </div>
+    <div class="lang-dropdown">
+        <ul>
+            {foreach $ld.langsurl as $key=>$item}
+            <li><a href="{$item.url}">{$item.title}</a></li>
+            {/foreach}
+        </ul>
+    </div>
+</div>
+```
+
+### 内容多语言处理
+```html
+<!-- 动态内容（已支持多语言） -->
+<h1>{$content.title}</h1>           <!-- 标题 -->
+<p>{$content.seo_description}</p>   <!-- 描述 -->
+<div>{$content.content}</div>       <!-- 内容 -->
+
+<!-- 栏目多语言 -->
+<h2>{$cate.name}</h2>               <!-- 栏目名称 -->
+<p>{$cate.ename}</p>                <!-- 栏目英文名 -->
+```
+
+---
+
+## 🎨 CSS和样式规范
+
+### Bootstrap类使用规范
+```html
+<!-- 响应式网格系统 -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-md-12">内容</div>
+    </div>
+</div>
+
+<!-- 响应式显示控制 -->
+<div class="d-none d-sm-block">桌面端显示</div>
+<div class="d-block d-sm-none">移动端显示</div>
+
+<!-- Flexbox布局 -->
+<div class="d-flex justify-content-between align-items-center">
+    <div>左侧内容</div>
+    <div>右侧内容</div>
+</div>
+```
+
+### 动画效果规范
+```html
+<!-- WOW动画效果 -->
+<div class="wow fadeInUp" data-wow-delay="0.1s">
+    内容
+</div>
+
+<!-- 常用动画类 -->
+<div class="wow fadeInLeft">从左进入</div>
+<div class="wow fadeInRight">从右进入</div>
+<div class="wow slideInUp">向上滑入</div>
+<div class="wow zoomIn">缩放进入</div>
+```
+
+### 自定义样式类规范
+```html
+<!-- 文本省略 -->
+<h3 class="text-ellipsis">{$item.title}</h3>
+<p class="text-ellipsis-2">{$item.description}</p>
+<p class="text-ellipsis-3">{$item.content}</p>
+
+<!-- 图片比例 -->
+<img class="ratio ratio-1x1" src="{$item.image}" alt="{$item.title}" />
+<img class="ratio ratio-16x9" src="{$item.image}" alt="{$item.title}" />
+
+<!-- 主题按钮 -->
+<a href="#" class="public-more">查看更多 <i class="fa fa-angle-double-right"></i></a>
+```
+
+---
+
+## 📱 响应式设计规范
+
+### 断点规范
+```css
+/* 移动端：<768px */
+@media (max-width: 767.98px) { }
+
+/* 平板端：768px-1199px */
+@media (min-width: 768px) and (max-width: 1199.98px) { }
+
+/* 桌面端：1200px+ */
+@media (min-width: 1200px) { }
+```
+
+### 响应式组件
+```html
+<!-- 导航菜单（桌面端/移动端自适应） -->
+<div class="nav-pc d-flex">桌面端导航</div>
+<a href="javascript:;" class="menu-mobile d-block d-sm-none">移动端菜单</a>
+
+<!-- 响应式图片 -->
+<img src="{$item.image}" class="img-fluid" alt="{$item.title}" />
+
+<!-- 响应式列布局 -->
+<div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12">
+    响应式内容
+</div>
+```
+
+---
+
+## 📊 SEO优化规范
+
+### 基础SEO标签
+```html
+<head>
+    <title>{$ld.sitetitle}</title>
+    <meta name="keywords" content="{$ld.seo_keywords}" />
+    <meta name="description" content="{$ld.seo_description}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- 页面专用SEO（详情页） -->
+    <title>{$content.title} - {$ld.sitetitle}</title>
+    <meta name="keywords" content="{$content.seo_keywords}" />
+    <meta name="description" content="{$content.seo_description}" />
+</head>
+```
+
+### 结构化数据
+```html
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">首页</a></li>
+        <li class="breadcrumb-item"><a href="{$cate.url}">{$cate.name}</a></li>
+        <li class="breadcrumb-item active">{$content.title}</li>
+    </ol>
+</nav>
+
+<!-- 语义化标签 -->
+<article class="content-article">
+    <header>
+        <h1>{$content.title}</h1>
+        <time datetime="{$content.create_time|date='Y-m-d'}">{$content.show_time}</time>
+    </header>
+    <main>{$content.content}</main>
+</article>
+```
+
+---
+
+## 🔧 JavaScript交互规范
+
+### jQuery使用规范
+```javascript
+// DOM就绪
+$(document).ready(function() {
+    // 初始化代码
+});
+
+// 轮播图初始化
+var swiper = new Swiper('.swiper-container', {
+    slidesPerView: 1,
+    spaceBetween: 30,
+    autoplay: {
+        delay: 5000,
+    },
+    pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+    }
+});
+
+// WOW动画初始化
+new WOW().init();
+```
+
+### 表单处理规范
+```html
+<!-- 搜索表单 -->
+<form action="{:addon_url('ldcms/search/index')}" method="get">
+    <input type="text" name="search" placeholder="{:__('Please enter keywords')}" />
+    <button type="submit">{:__('Search')}</button>
+</form>
+
+<!-- 联系表单 -->
+<form action="{:addon_url('ldcms/diyform/message')}" method="post">
+    <input type="text" name="uname" placeholder="您的姓名" required />
+    <input type="email" name="email" placeholder="您的邮箱" required />
+    <textarea name="message" placeholder="您的留言" required></textarea>
+    {:token()}
+    <button type="submit">提交</button>
+</form>
+```
+
+---
+
+## 🎯 API接口集成规范
+
+### 社交功能API调用
+```javascript
+// 统一API调用函数
+function callSocialAPI(endpoint, method = 'GET', data = {}) {
+    return $.ajax({
+        url: '/api/social/' + endpoint,
+        method: method,
+        data: data,
+        dataType: 'json',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+}
+
+// 点赞功能
+function toggleLike(postId) {
+    callSocialAPI('like/post/' + postId, 'POST')
+        .done(function(response) {
+            if (response.code === 1) {
+                // 更新点赞状态
+                updateLikeButton(postId, response.data.is_liked);
+            }
+        });
+}
+
+// 分页加载
+function loadMorePosts(page) {
+    callSocialAPI('post/list?page=' + page)
+        .done(function(response) {
+            if (response.code === 1) {
+                appendPostsToList(response.data.list);
+            }
+        });
+}
+```
+
+### 错误处理规范
+```javascript
+// 统一错误处理
+function handleAPIError(xhr, status, error) {
+    if (xhr.status === 401) {
+        // 未登录，显示登录弹窗
+        showLoginModal();
+    } else if (xhr.status >= 500) {
+        // 服务器错误
+        layer.msg('服务器错误，请稍后重试');
+    } else {
+        // 其他错误
+        const response = xhr.responseJSON;
+        layer.msg(response.msg || '操作失败');
+    }
+}
+
+// API调用时添加错误处理
+callSocialAPI('post/list').fail(handleAPIError);
+```
+
+---
+
+## 🔒 安全规范
+
+### XSS防护
+```html
+<!-- 输出用户内容时使用过滤器 -->
+<h1>{$content.title|htmlspecialchars}</h1>
+<div>{$content.content|raw}</div>  <!-- 富文本内容，确保已过滤 -->
+
+<!-- 表单CSRF保护 -->
+<form method="post">
+    {:token()}
+    <!-- 表单字段 -->
+</form>
+```
+
+### 数据验证
+```javascript
+// 前端表单验证
+function validateForm(formData) {
+    if (!formData.title || formData.title.trim().length < 2) {
+        layer.msg('标题至少2个字符');
+        return false;
+    }
+    
+    if (!formData.content || formData.content.trim().length < 10) {
+        layer.msg('内容至少10个字符');
+        return false;
+    }
+    
+    return true;
+}
+
+// 敏感词过滤（前端简单检查）
+function checkSensitiveWords(text) {
+    const sensitiveWords = ['违法', '广告', '垃圾'];
+    return !sensitiveWords.some(word => text.includes(word));
+}
+```
+
+---
+
+## ✅ 代码质量检查清单
+
+### 模板文件检查
+- [ ] 文件命名符合list_*.html或detail_*.html规范
+- [ ] 正确继承base模板并使用block定义内容区域
+- [ ] 使用正确的include引用公共组件
+- [ ] 所有LDCMS标签语法正确
+- [ ] URL生成使用addon_url()函数
+- [ ] 资源路径使用__ADDON__或__CDN__前缀
+- [ ] 图片使用cdnurl过滤器处理
+- [ ] 多语言文本使用{:__()}函数
+- [ ] CSS类名遵循Bootstrap和主题规范
+- [ ] 响应式设计适配移动端
+- [ ] SEO标签完整且正确
+
+### JavaScript代码检查
+- [ ] 使用jQuery进行DOM操作
+- [ ] 第三方库正确初始化
+- [ ] API调用使用统一的错误处理
+- [ ] 表单验证完整
+- [ ] 无全局变量污染
+- [ ] 代码注释清晰
+
+### 性能优化检查
+- [ ] 图片使用懒加载
+- [ ] CSS/JS文件压缩
+- [ ] 减少HTTP请求
+- [ ] 合理使用缓存策略
+- [ ] 避免内联样式和脚本
+
+---
+
+## 🚨 常见错误及解决方案
+
+### 模板文件找不到
+**错误现象**: 页面显示模板文件不存在
+**原因**: 文件命名不符合LDCMS规范
+**解决方案**: 检查模型配置中的模板文件名是否与实际文件名一致，确保使用list_*或detail_*命名
+
+### 标签语法错误
+**错误现象**: 标签不解析或报错
+**原因**: LDCMS标签语法错误
+**解决方案**: 检查标签闭合、属性格式，参考官方文档示例
+
+### 资源文件404
+**错误现象**: CSS/JS/图片加载失败
+**原因**: 资源路径错误
+**解决方案**: 使用正确的__ADDON__或__CDN__前缀，检查文件实际位置
+
+### API调用失败
+**错误现象**: 前端功能无响应
+**原因**: API接口调用错误或权限问题
+**解决方案**: 检查接口路径、请求方法、用户登录状态
+
+---
+
+**📝 文档版本**: v1.0  
+**🔄 最后更新**: 2025-01-25  
+**📧 维护者**: LDCMS开发团队  
+**🎯 适用范围**: biubiustar-trae项目LDCMS插件前端开发

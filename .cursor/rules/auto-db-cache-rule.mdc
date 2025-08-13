@@ -1,0 +1,119 @@
+---
+description: 数据库` `表` `SQL` `fa_ldcms_`  - `模版` `语言` `配置` `JSON` `biubiustar2025` `ldcms` `状态` `错误``数据`
+alwaysApply: false
+---
+# 数据库与缓存自动化规则 (auto-db-cache-rule)
+
+## 核心规则
+
+### 1. 自动数据库查询触发器
+当遇到以下关键词时，**立即**通过MCP MySQL Server查询数据库：
+- `数据库` `表` `SQL` `fa_ldcms_` 
+- `模版` `语言` `配置` `JSON`
+- `biubiustar2025` `ldcms` `状态` `错误`
+
+**自动执行查询序列**：
+```sql
+-- 1. 检查表结构
+SHOW TABLES LIKE 'fa_ldcms%';
+
+-- 2. 验证语言数据  
+SELECT id, title, code, status, is_default FROM fa_ldcms_langs ORDER BY id;
+
+-- 3. 验证配置数据
+SELECT lang, JSON_VALID(config) as is_valid_json, 
+       JSON_EXTRACT(config, '$."0".value') as template_value 
+FROM fa_ldcms_siteinfo ORDER BY id;
+
+-- 4. 统计数据完整性
+SELECT COUNT(*) as total_langs FROM fa_ldcms_langs WHERE status = 1;
+SELECT COUNT(*) as total_siteinfo FROM fa_ldcms_siteinfo;
+```
+
+### 2. 自动缓存清理触发器
+当完成以下操作后，**立即**清理缓存（无需确认）：
+- 修改数据库数据
+- 修改配置文件
+- 解决模版/语言问题
+- 修复任何系统错误
+
+**自动执行清理命令**：
+```bash
+# 静默清理所有缓存
+rm -rf runtime/cache/* runtime/temp/* runtime/log/*
+mkdir -p runtime/cache runtime/temp runtime/log
+echo "✅ 缓存已自动清理"
+```
+
+### 3. 工作流程
+```
+问题识别 → 自动数据库查询 → 问题分析 → 解决方案 → 修复操作 → 自动缓存清理 → 验证提示
+```
+
+### 4. 执行原则
+- **无需确认**：所有操作自动执行
+- **并行处理**：同时进行查询和分析  
+- **完整覆盖**：确保数据和缓存完全同步
+- **用户友好**：减少手动操作步骤
+
+---
+**规则状态**: ✅ 激活  
+**适用项目**: biubiustar-trae  
+**更新日期**: 2024-08-11# 数据库与缓存自动化规则 (auto-db-cache-rule)
+
+## 核心规则
+
+### 1. 自动数据库查询触发器
+当遇到以下关键词时，**立即**通过MCP MySQL Server查询数据库：
+- `数据库` `表` `SQL` `fa_ldcms_` 
+- `模版` `语言` `配置` `JSON`
+- `biubiustar2025` `ldcms` `状态` `错误`
+
+**自动执行查询序列**：
+```sql
+-- 1. 检查表结构
+SHOW TABLES LIKE 'fa_ldcms%';
+
+-- 2. 验证语言数据  
+SELECT id, title, code, status, is_default FROM fa_ldcms_langs ORDER BY id;
+
+-- 3. 验证配置数据
+SELECT lang, JSON_VALID(config) as is_valid_json, 
+       JSON_EXTRACT(config, '$."0".value') as template_value 
+FROM fa_ldcms_siteinfo ORDER BY id;
+
+-- 4. 统计数据完整性
+SELECT COUNT(*) as total_langs FROM fa_ldcms_langs WHERE status = 1;
+SELECT COUNT(*) as total_siteinfo FROM fa_ldcms_siteinfo;
+```
+
+### 2. 自动缓存清理触发器
+当完成以下操作后，**立即**清理缓存（无需确认）：
+- 修改数据库数据
+- 修改配置文件
+- 解决模版/语言问题
+- 修复任何系统错误
+
+**自动执行清理命令**：
+```bash
+# 静默清理所有缓存
+rm -rf runtime/cache/* runtime/temp/* runtime/log/*
+mkdir -p runtime/cache runtime/temp runtime/log
+echo "✅ 缓存已自动清理"
+```
+
+### 3. 工作流程
+```
+问题识别 → 自动数据库查询 → 问题分析 → 解决方案 → 修复操作 → 自动缓存清理 → 验证提示
+```
+
+### 4. 执行原则
+- **无需确认**：所有操作自动执行
+- **并行处理**：同时进行查询和分析  
+- **完整覆盖**：确保数据和缓存完全同步
+- **用户友好**：减少手动操作步骤
+
+---
+**规则状态**: ✅ 激活  
+**适用项目**: biubiustar-trae  
+**更新日期**: 2024-08-11

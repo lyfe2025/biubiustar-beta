@@ -1,0 +1,1242 @@
+---
+description: 插件 LDCMS
+alwaysApply: false
+---
+# IDCMS 插件项目规则文档
+
+> **企业网站管理系统（多语言+多模板）开发规范**  
+> 基于 FastAdmin + ThinkPHP5.1 + Uniapp 的完整开发指南
+
+---
+
+## 📋 目录
+
+1. [项目概述](#项目概述)
+2. [技术架构规范](#技术架构规范)
+3. [目录结构规范](#目录结构规范)
+4. [开发规范](#开发规范)
+5. [API开发规范](#api开发规范)
+6. [模板开发规范](#模板开发规范)
+7. [数据库设计规范](#数据库设计规范)
+8. [安全规范](#安全规范)
+9. [部署规范](#部署规范)
+10. [文档规范](#文档规范)
+11. [测试规范](#测试规范)
+12. [维护规范](#维护规范)
+
+---
+
+## 🎯 项目概述
+
+### 项目定位
+IDCMS是一套完整的企业网站管理系统，具备以下核心特性：
+- 多语言支持（默认中英文，可扩展）
+- 多套模板系统
+- 响应式设计
+- API接口支持
+- 小程序端支持
+- 完整的内容管理功能
+
+### 核心功能模块
+- 内容管理（文章、产品、单页等）
+- 栏目分类管理
+- 模型与字段管理
+- 轮播图管理
+- 自定义表单
+- 多语言管理
+- 模板管理
+- API接口
+- 用户权限管理
+
+---
+
+## 🏗️ 技术架构规范
+
+### 技术栈要求
+
+#### 后端技术栈
+- **框架**: ThinkPHP 5.1+
+- **数据库**: MySQL 5.6+ / MariaDB 10.0+
+- **缓存**: Redis（可选）
+- **Web服务器**: Apache 2.4+ / Nginx 1.10+
+- **PHP版本**: PHP 7.1+
+
+#### 前端技术栈
+- **后台界面**: Bootstrap 4+ + AdminLTE 3+
+- **前台模板**: HTML5 + CSS3 + JavaScript ES6+
+- **响应式框架**: Bootstrap / 自定义响应式方案
+- **图标字体**: FontAwesome 5+
+
+#### 小程序技术栈
+- **框架**: Uniapp
+- **兼容平台**: 微信小程序、H5、App
+- **UI组件**: uView UI 或同等组件库
+
+### 架构设计原则
+1. **模块化设计**: 功能模块独立，降低耦合
+2. **插件化架构**: 基于FastAdmin插件体系
+3. **MVC模式**: 严格遵循MVC设计模式
+4. **RESTful API**: API接口遵循RESTful规范
+5. **响应式设计**: 支持多端适配
+
+---
+
+## 📁 目录结构规范
+
+### 插件根目录结构
+```
+addons/ldcms/
+├── bootstrap.js           # 插件启动文件
+├── common.php            # 公共函数文件
+├── config.html           # 插件配置页面
+├── Info.php              # 插件信息文件
+├── Install.sql           # 安装SQL文件
+├── Uninstall.sql         # 卸载SQL文件
+├── controller/           # 控制器目录
+│   ├── api/             # API控制器
+│   │   ├── v1/          # API v1版本
+│   │   └── v2/          # API v2版本
+│   ├── Base.php         # 基础控制器
+│   ├── Index.php        # 首页控制器
+│   ├── Category.php     # 分类控制器
+│   ├── Detail.php       # 详情控制器
+│   └── ...              # 其他控制器
+├── model/               # 数据模型目录
+│   ├── common/          # 公共模型
+│   ├── Category.php     # 分类模型
+│   ├── Content.php      # 内容模型
+│   ├── Ad.php           # 广告模型
+│   └── ...              # 其他模型
+├── view/                # 模板目录
+│   ├── default/         # 默认中文模板
+│   ├── en/              # 英文模板
+│   ├── ldcms2024/       # 自定义模板
+│   └── ...              # 其他模板
+├── lang/                # 语言包目录
+│   ├── zh-cn.php        # 中文语言包
+│   ├── en.php           # 英文语言包
+│   └── ...              # 其他语言包
+├── taglib/              # 标签库目录
+│   └── Ld.php           # LDCMS标签库
+├── utils/               # 工具类目录
+│   ├── builder/         # 构建器
+│   ├── DfaFilter/       # 敏感词过滤
+│   ├── fanyi/           # 翻译工具
+│   └── ...              # 其他工具
+├── uniapp/              # 小程序源码
+│   ├── pages/           # 页面目录
+│   ├── components/      # 组件目录
+│   ├── static/          # 静态资源
+│   ├── store/           # 状态管理
+│   ├── common/          # 公共文件
+│   ├── manifest.json    # 应用配置
+│   ├── pages.json       # 页面配置
+│   └── App.vue          # 应用入口
+└── public/              # 静态资源目录
+    ├── assets/          # 插件资源
+    ├── css/             # 样式文件
+    ├── js/              # 脚本文件
+    └── images/          # 图片资源
+```
+
+### 模板目录结构规范
+```
+view/模板名/
+├── info.ini             # 模板信息文件
+├── preview.jpg          # 模板预览图
+├── index.html           # 首页模板
+├── list.html            # 列表页模板
+├── detail.html          # 详情页模板
+├── search.html          # 搜索页模板
+├── head.html            # 头部文件
+├── footer.html          # 底部文件
+├── nav.html             # 导航文件
+├── css/                 # 样式文件
+│   ├── style.css        # 主样式
+│   ├── responsive.css   # 响应式样式
+│   └── ...              # 其他样式
+├── js/                  # 脚本文件
+│   ├── main.js          # 主脚本
+│   └── ...              # 其他脚本
+├── images/              # 图片资源
+└── fonts/               # 字体文件
+```
+
+---
+
+## 💻 开发规范
+
+### 命名规范
+
+#### 文件命名
+- **控制器文件**: 大驼峰命名，如 `CategoryController.php`
+- **模型文件**: 大驼峰命名，如 `ContentModel.php`
+- **视图文件**: 小写+下划线，如 `category_list.html`
+- **配置文件**: 小写+下划线，如 `database_config.php`
+
+#### 类命名
+- **控制器类**: `模块名Controller`，如 `CategoryController`
+- **模型类**: `表名Model`，如 `ContentModel`
+- **服务类**: `功能名Service`，如 `EmailService`
+
+#### 方法命名
+- **控制器方法**: 小驼峰命名，如 `getArticleList()`
+- **模型方法**: 小驼峰命名，如 `findByCategory()`
+- **私有方法**: 下划线前缀，如 `_validateData()`
+
+#### 变量命名
+- **普通变量**: 小驼峰命名，如 `$articleList`
+- **常量**: 全大写+下划线，如 `MAX_PAGE_SIZE`
+- **配置项**: 小写+下划线，如 `api_timeout`
+
+### 代码风格规范
+
+#### PHP代码规范
+```php
+<?php
+namespace addons\ldcms\model;
+
+use think\Model;
+use think\Db;
+
+/**
+ * 内容模型类
+ * @package addons\ldcms\model
+ */
+class Content extends Model
+{
+    // 表名
+    protected $table = 'ldcms_content';
+    
+    // 自动时间戳
+    protected $autoWriteTimestamp = true;
+    
+    /**
+     * 根据分类获取内容列表
+     * @param int $categoryId 分类ID
+     * @param int $limit 限制数量
+     * @return array
+     */
+    public function getListByCategory($categoryId, $limit = 10)
+    {
+        return $this->where('category_id', $categoryId)
+                    ->where('status', 1)
+                    ->limit($limit)
+                    ->order('sort desc, id desc')
+                    ->select();
+    }
+    
+    /**
+     * 验证数据
+     * @param array $data 数据
+     * @return bool
+     */
+    private function _validateData($data)
+    {
+        // 验证逻辑
+        return true;
+    }
+}
+```
+
+#### JavaScript代码规范
+```javascript
+/**
+ * LDCMS前端公共脚本
+ */
+(function($) {
+    'use strict';
+    
+    // 命名空间
+    window.LDCMS = window.LDCMS || {};
+    
+    // 配置项
+    LDCMS.config = {
+        apiUrl: '/addons/ldcms/api.v1/',
+        timeout: 10000
+    };
+    
+    /**
+     * API请求封装
+     * @param {string} url 请求地址
+     * @param {object} data 请求数据
+     * @param {function} callback 回调函数
+     */
+    LDCMS.request = function(url, data, callback) {
+        $.ajax({
+            url: LDCMS.config.apiUrl + url,
+            type: 'GET',
+            data: data,
+            dataType: 'json',
+            timeout: LDCMS.config.timeout,
+            success: function(response) {
+                if (typeof callback === 'function') {
+                    callback(response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('API请求失败:', error);
+            }
+        });
+    };
+    
+})(jQuery);
+```
+
+### 注释规范
+
+#### PHP注释规范
+```php
+/**
+ * 类功能描述
+ * 
+ * @package 包名
+ * @author 作者名
+ * @version 版本号
+ * @since 开始版本
+ */
+
+/**
+ * 方法功能描述
+ * 
+ * @param type $param 参数描述
+ * @return type 返回值描述
+ * @throws Exception 异常描述
+ */
+
+// 单行注释：简短的功能说明
+
+/*
+ * 多行注释：
+ * 复杂逻辑的详细说明
+ */
+```
+
+---
+
+## 🔌 API开发规范
+
+### API设计原则
+1. **RESTful设计**: 遵循REST架构风格
+2. **版本控制**: 通过URL路径进行版本控制
+3. **统一响应**: 统一的响应格式和状态码
+4. **安全认证**: 强制API认证机制
+5. **错误处理**: 完善的错误处理和提示
+
+### API路由规范
+```
+/addons/ldcms/api.v1/
+├── config              # GET    获取配置
+├── nav                 # GET    获取导航
+├── category            # GET    获取分类
+├── lists               # GET    获取列表
+├── detail/{id}         # GET    获取详情
+├── content/{id}        # GET    获取内容
+├── ad                  # GET    获取广告
+├── links               # GET    获取友链
+├── search              # GET    搜索内容
+├── diyform            # POST   提交表单
+└── upload             # POST   文件上传
+```
+
+### 认证机制
+```php
+/**
+ * API认证中间件
+ */
+public function checkAuth()
+{
+    $appid = $this->request->header('appid');
+    $timestamp = $this->request->header('timestamp');
+    $signature = $this->request->header('signature');
+    
+    // 验证参数完整性
+    if (empty($appid) || empty($timestamp) || empty($signature)) {
+        $this->error('认证参数不完整', null, 10001);
+    }
+    
+    // 验证时间戳
+    if (abs(time() - $timestamp) > 300) {
+        $this->error('请求已过期', null, 10005);
+    }
+    
+    // 验证签名
+    $secret = config('ldcms.api_secret');
+    $expectSignature = md5(md5($appid . $secret . $timestamp));
+    
+    if ($signature !== $expectSignature) {
+        $this->error('签名验证失败', null, 10004);
+    }
+}
+```
+
+### 响应格式规范
+```php
+/**
+ * 成功响应
+ */
+return json([
+    'code' => 1,
+    'msg' => '成功',
+    'data' => $data,
+    'time' => time()
+]);
+
+/**
+ * 错误响应
+ */
+return json([
+    'code' => 0,
+    'msg' => $errorMessage,
+    'data' => null,
+    'time' => time()
+]);
+```
+
+### 错误码规范
+```php
+// 认证相关错误 10xxx
+const ERROR_AUTH_MISSING_APPID = 10001;
+const ERROR_AUTH_MISSING_TIMESTAMP = 10002;
+const ERROR_AUTH_MISSING_SIGNATURE = 10003;
+const ERROR_AUTH_SIGNATURE_INVALID = 10004;
+const ERROR_AUTH_TIMESTAMP_EXPIRED = 10005;
+
+// 数据相关错误 20xxx
+const ERROR_DATA_NOT_FOUND = 20001;
+const ERROR_DATA_CATEGORY_NOT_EXISTS = 20002;
+const ERROR_DATA_CONTENT_NOT_EXISTS = 20003;
+
+// 参数相关错误 30xxx
+const ERROR_PARAM_INVALID = 30001;
+const ERROR_PARAM_MISSING = 30002;
+
+// 系统相关错误 50xxx
+const ERROR_SYSTEM_ERROR = 50001;
+const ERROR_DATABASE_ERROR = 50002;
+```
+
+---
+
+## 🎨 模板开发规范
+
+### 模板结构规范
+```html
+<!DOCTYPE html>
+<html lang="{$lang}">
+<head>
+    {include file="head" /}
+</head>
+<body>
+    <!-- 导航区域 -->
+    <nav class="navbar">
+        {include file="nav" /}
+    </nav>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        {__CONTENT__}
+    </main>
+    
+    <!-- 底部区域 -->
+    <footer class="footer">
+        {include file="footer" /}
+    </footer>
+</body>
+</html>
+```
+
+### 标签使用规范
+
+#### 导航标签
+```html
+{ld:nav pid="0" limit="10"}
+<li class="nav-item {if $item.id == $topid}active{/if}">
+    <a href="{$item.url}" class="nav-link">{$item.name}</a>
+    {if $item.children}
+    <ul class="dropdown-menu">
+        {volist name="item.children" id="child"}
+        <li><a href="{$child.url}">{$child.name}</a></li>
+        {/volist}
+    </ul>
+    {/if}
+</li>
+{/ld:nav}
+```
+
+#### 列表标签
+```html
+{ld:list cid="$category.id" limit="10"}
+<article class="article-item">
+    <div class="article-thumb">
+        <a href="{$item.url}">
+            <img src="{$item.image|default='/static/images/default.jpg'}" alt="{$item.title}">
+        </a>
+    </div>
+    <div class="article-content">
+        <h3 class="article-title">
+            <a href="{$item.url}">{$item.title}</a>
+        </h3>
+        <p class="article-summary">{$item.description}</p>
+        <div class="article-meta">
+            <span class="date">{$item.create_time|date='Y-m-d'}</span>
+            <span class="views">浏览：{$item.views}</span>
+        </div>
+    </div>
+</article>
+{/ld:list}
+```
+
+#### 轮播图标签
+```html
+{ld:slide name="banner"}
+<div class="slide-item">
+    <a href="{$item.url}" target="{$item.target|default='_self'}">
+        <img src="{$item.image}" alt="{$item.title}">
+        {if $item.title}
+        <div class="slide-caption">
+            <h3>{$item.title}</h3>
+            {if $item.description}
+            <p>{$item.description}</p>
+            {/if}
+        </div>
+        {/if}
+    </a>
+</div>
+{/ld:slide}
+```
+
+### 响应式设计规范
+```css
+/* 移动优先的响应式设计 */
+
+/* 基础样式 (默认移动端) */
+.container {
+    width: 100%;
+    padding: 0 15px;
+}
+
+/* 平板端 */
+@media (min-width: 768px) {
+    .container {
+        max-width: 750px;
+        margin: 0 auto;
+    }
+}
+
+/* 桌面端 */
+@media (min-width: 992px) {
+    .container {
+        max-width: 970px;
+    }
+}
+
+/* 大屏桌面端 */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1170px;
+    }
+}
+```
+
+### 多语言支持
+```html
+<!-- 模板中的多语言调用 -->
+<title>{$ld.sitetitle} - {:lang('Home')}</title>
+<meta name="keywords" content="{$ld.seo_keywords}">
+<meta name="description" content="{$ld.seo_description}">
+
+<!-- 语言切换菜单 -->
+<div class="language-switcher">
+    {volist name="languages" id="lang"}
+    <a href="{$lang.url}" class="{if $lang.current}active{/if}">
+        {$lang.name}
+    </a>
+    {/volist}
+</div>
+```
+
+---
+
+## 🗄️ 数据库设计规范
+
+### 表命名规范
+- **表前缀**: `ldcms_`
+- **表名格式**: `ldcms_模块名`，如 `ldcms_content`
+- **关联表**: `ldcms_表1_表2`，如 `ldcms_content_category`
+
+### 字段命名规范
+- **主键**: `id` (unsigned int, auto_increment)
+- **外键**: `表名_id`，如 `category_id`
+- **时间字段**: `create_time`、`update_time`、`delete_time`
+- **状态字段**: `status` (tinyint, 0=禁用 1=启用)
+- **排序字段**: `sort` (int, 默认0)
+
+### 表结构示例
+```sql
+-- 内容表
+CREATE TABLE `ldcms_content` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `category_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '分类ID',
+    `model_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '模型ID',
+    `title` varchar(255) NOT NULL DEFAULT '' COMMENT '标题',
+    `keywords` varchar(255) NOT NULL DEFAULT '' COMMENT '关键词',
+    `description` text COMMENT '描述',
+    `content` longtext COMMENT '内容',
+    `image` varchar(255) NOT NULL DEFAULT '' COMMENT '图片',
+    `images` text COMMENT '图片集',
+    `views` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '浏览次数',
+    `sort` int(10) NOT NULL DEFAULT '0' COMMENT '排序',
+    `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
+    `create_time` int(10) unsigned DEFAULT NULL COMMENT '创建时间',
+    `update_time` int(10) unsigned DEFAULT NULL COMMENT '更新时间',
+    `delete_time` int(10) unsigned DEFAULT NULL COMMENT '删除时间',
+    PRIMARY KEY (`id`),
+    KEY `category_id` (`category_id`),
+    KEY `status` (`status`),
+    KEY `sort` (`sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内容表';
+
+-- 分类表
+CREATE TABLE `ldcms_category` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `pid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '父级ID',
+    `model_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '模型ID',
+    `name` varchar(50) NOT NULL DEFAULT '' COMMENT '分类名称',
+    `nickname` varchar(50) NOT NULL DEFAULT '' COMMENT '分类别名',
+    `type` enum('list','content') NOT NULL DEFAULT 'list' COMMENT '类型',
+    `image` varchar(255) NOT NULL DEFAULT '' COMMENT '图片',
+    `keywords` varchar(255) NOT NULL DEFAULT '' COMMENT '关键词',
+    `description` text COMMENT '描述',
+    `sort` int(10) NOT NULL DEFAULT '0' COMMENT '排序',
+    `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
+    `create_time` int(10) unsigned DEFAULT NULL COMMENT '创建时间',
+    `update_time` int(10) unsigned DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `pid` (`pid`),
+    KEY `status` (`status`),
+    KEY `sort` (`sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分类表';
+```
+
+### 数据库操作规范
+```php
+// 推荐的查询方式
+$contentList = Db::name('content')
+    ->alias('c')
+    ->join('category cat', 'c.category_id = cat.id')
+    ->where('c.status', 1)
+    ->where('cat.status', 1)
+    ->field('c.*, cat.name as category_name')
+    ->order('c.sort desc, c.id desc')
+    ->limit($offset, $limit)
+    ->select();
+
+// 使用模型查询
+$content = new \addons\ldcms\model\Content();
+$list = $content->getListByCategory($categoryId, $limit);
+```
+
+---
+
+## 🔒 安全规范
+
+### 输入验证
+```php
+/**
+ * 数据验证规则
+ */
+protected $rule = [
+    'title'       => 'require|max:255',
+    'content'     => 'require',
+    'category_id' => 'require|integer|gt:0',
+    'status'      => 'in:0,1',
+    'sort'        => 'integer|egt:0'
+];
+
+/**
+ * 输入过滤
+ */
+public function filterInput($data)
+{
+    // XSS过滤
+    $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES);
+    
+    // SQL注入防护 (使用参数化查询)
+    // 移除危险字符
+    $data['content'] = $this->removeDangerousChars($data['content']);
+    
+    return $data;
+}
+```
+
+### API安全
+```php
+/**
+ * API频率限制
+ */
+public function rateLimit()
+{
+    $key = 'api_rate_' . $this->request->ip();
+    $requests = cache($key) ?: 0;
+    
+    if ($requests >= 100) { // 每分钟最多100次请求
+        $this->error('请求过于频繁', null, 40001);
+    }
+    
+    cache($key, $requests + 1, 60);
+}
+
+/**
+ * IP白名单验证
+ */
+public function checkIpWhitelist()
+{
+    $allowedIps = config('ldcms.api_whitelist', []);
+    $clientIp = $this->request->ip();
+    
+    if (!empty($allowedIps) && !in_array($clientIp, $allowedIps)) {
+        $this->error('IP访问受限', null, 40003);
+    }
+}
+```
+
+### 文件上传安全
+```php
+/**
+ * 安全的文件上传
+ */
+public function upload()
+{
+    $file = $this->request->file('file');
+    
+    // 验证文件类型
+    $allowTypes = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'];
+    if (!in_array($file->getExtension(), $allowTypes)) {
+        $this->error('不允许的文件类型');
+    }
+    
+    // 验证文件大小 (最大10MB)
+    if ($file->getSize() > 10 * 1024 * 1024) {
+        $this->error('文件大小超过限制');
+    }
+    
+    // 重命名文件
+    $fileName = md5(uniqid()) . '.' . $file->getExtension();
+    
+    // 移动到安全目录
+    $savePath = ROOT_PATH . 'public/uploads/' . date('Y/m/d');
+    $file->move($savePath, $fileName);
+    
+    return '/uploads/' . date('Y/m/d') . '/' . $fileName;
+}
+```
+
+### 权限控制
+```php
+/**
+ * 权限验证
+ */
+public function checkPermission($action)
+{
+    $user = $this->auth->getUser();
+    
+    if (!$user) {
+        $this->error('请先登录');
+    }
+    
+    $permissions = $user->getPermissions();
+    
+    if (!in_array($action, $permissions)) {
+        $this->error('权限不足');
+    }
+}
+```
+
+---
+
+## 🚀 部署规范
+
+### 环境要求
+```bash
+# 服务器环境
+OS: CentOS 7+ / Ubuntu 18+ / Windows Server 2016+
+Web Server: Apache 2.4+ / Nginx 1.10+
+PHP: 7.1+ (推荐 7.4+)
+MySQL: 5.6+ / MariaDB 10.0+
+Redis: 5.0+ (可选)
+
+# PHP扩展要求
+extension: PDO, PDO_MYSQL, mbstring, openssl, curl, gd, fileinfo, zip
+```
+
+### 部署步骤
+```bash
+# 1. 上传代码
+git clone https://github.com/your-repo/ldcms.git
+cd ldcms
+
+# 2. 安装依赖
+composer install --no-dev --optimize-autoloader
+
+# 3. 设置权限
+chmod -R 755 runtime/
+chmod -R 755 public/uploads/
+chown -R www:www runtime/
+chown -R www:www public/uploads/
+
+# 4. 配置数据库
+cp config/database.example.php config/database.php
+# 编辑数据库配置
+
+# 5. 导入数据库
+mysql -u username -p database_name < install.sql
+
+# 6. 配置Web服务器
+# Apache: 启用mod_rewrite
+# Nginx: 配置伪静态规则
+```
+
+### Nginx配置示例
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/your/project/public;
+    index index.php index.html;
+    
+    # 伪静态规则
+    location / {
+        try_files $uri $uri/ /index.php?s=$uri&$args;
+    }
+    
+    # PHP处理
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+    
+    # 静态文件缓存
+    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # 安全配置
+    location ~ /\. {
+        deny all;
+    }
+    
+    location ~ /(?:uploads|files)/.*\.php$ {
+        deny all;
+    }
+}
+```
+
+### 性能优化
+```php
+// 开启OpCache
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.revalidate_freq=2
+
+// 配置缓存
+return [
+    'cache' => [
+        'type'   => 'redis',
+        'host'   => '127.0.0.1',
+        'port'   => 6379,
+        'prefix' => 'ldcms:',
+        'expire' => 3600,
+    ],
+];
+
+// 数据库优化
+return [
+    'database' => [
+        'type'          => 'mysql',
+        'hostname'      => '127.0.0.1',
+        'database'      => 'ldcms',
+        'username'      => 'username',
+        'password'      => 'password',
+        'charset'       => 'utf8mb4',
+        'prefix'        => 'ldcms_',
+        'deploy'        => 1,  // 分布式部署
+        'rw_separate'   => true,  // 读写分离
+    ],
+];
+```
+
+---
+
+## 📚 文档规范
+
+### 文档目录结构
+```
+docs/
+├── README.md                # 项目概述
+├── 安装指南/
+│   ├── 环境要求.md
+│   ├── 安装步骤.md
+│   └── 配置说明.md
+├── 使用教程/
+│   ├── 快速入门.md
+│   ├── 功能介绍.md
+│   └── 常见问题.md
+├── 开发文档/
+│   ├── API文档.md
+│   ├── 模板开发.md
+│   ├── 插件开发.md
+│   └── 数据库设计.md
+├── 部署运维/
+│   ├── 部署指南.md
+│   ├── 性能优化.md
+│   └── 故障排除.md
+└── 更新日志/
+    ├── CHANGELOG.md
+    └── 版本说明.md
+```
+
+### 文档编写规范
+```markdown
+# 文档标题
+
+> 文档概述和说明
+
+## 目录
+- [章节1](#章节1)
+- [章节2](#章节2)
+
+## 章节1
+
+### 小节1.1
+内容描述...
+
+#### 代码示例
+```php
+// 代码注释
+$example = 'Hello World';
+```
+
+#### 配置示例
+```yaml
+# 配置说明
+option: value
+```
+
+### 注意事项
+> ⚠️ **警告**: 重要提醒信息
+> 💡 **提示**: 有用的小贴士
+> 📝 **说明**: 补充说明信息
+
+## 更新记录
+- 2024-01-01: 创建文档
+- 2024-01-15: 更新API说明
+
+---
+*文档最后更新: 2024-01-15*
+```
+
+---
+
+## 🧪 测试规范
+
+### 单元测试
+```php
+<?php
+namespace tests\unit;
+
+use PHPUnit\Framework\TestCase;
+use addons\ldcms\model\Content;
+
+class ContentTest extends TestCase
+{
+    protected $content;
+    
+    public function setUp(): void
+    {
+        $this->content = new Content();
+    }
+    
+    /**
+     * 测试获取内容列表
+     */
+    public function testGetList()
+    {
+        $list = $this->content->getListByCategory(1, 10);
+        
+        $this->assertIsArray($list);
+        $this->assertLessThanOrEqual(10, count($list));
+    }
+    
+    /**
+     * 测试数据验证
+     */
+    public function testValidate()
+    {
+        $data = [
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+            'category_id' => 1
+        ];
+        
+        $result = $this->content->validate($data);
+        $this->assertTrue($result);
+    }
+}
+```
+
+### API测试
+```php
+<?php
+namespace tests\api;
+
+use PHPUnit\Framework\TestCase;
+
+class ApiTest extends TestCase
+{
+    private $baseUrl = 'http://localhost/addons/ldcms/api.v1/';
+    private $headers = [];
+    
+    public function setUp(): void
+    {
+        // 设置认证头
+        $appid = 'test_appid';
+        $secret = 'test_secret';
+        $timestamp = time();
+        $signature = md5(md5($appid . $secret . $timestamp));
+        
+        $this->headers = [
+            'appid: ' . $appid,
+            'timestamp: ' . $timestamp,
+            'signature: ' . $signature
+        ];
+    }
+    
+    /**
+     * 测试获取配置接口
+     */
+    public function testGetConfig()
+    {
+        $response = $this->makeRequest('config');
+        
+        $this->assertEquals(1, $response['code']);
+        $this->assertArrayHasKey('data', $response);
+    }
+    
+    private function makeRequest($endpoint, $data = [])
+    {
+        $url = $this->baseUrl . $endpoint;
+        if (!empty($data)) {
+            $url .= '?' . http_build_query($data);
+        }
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        return json_decode($response, true);
+    }
+}
+```
+
+### 性能测试
+```bash
+# 使用ab进行压力测试
+ab -n 1000 -c 10 http://localhost/addons/ldcms/api.v1/lists?cid=1
+
+# 使用siege进行并发测试
+siege -c 20 -t 60s http://localhost/addons/ldcms/
+
+# 数据库性能分析
+EXPLAIN SELECT * FROM ldcms_content WHERE category_id = 1 ORDER BY sort DESC;
+```
+
+---
+
+## 🔧 维护规范
+
+### 日志管理
+```php
+// 配置日志
+return [
+    'log' => [
+        'type'        => 'File',
+        'path'        => LOG_PATH,
+        'level'       => ['error', 'warning', 'info'],
+        'file_size'   => 10 * 1024 * 1024,  // 10MB
+        'time_format' => 'Y-m-d H:i:s',
+    ],
+];
+
+// 记录日志
+Log::info('用户访问', ['user_id' => 123, 'ip' => '192.168.1.1']);
+Log::error('数据库连接失败', ['error' => $e->getMessage()]);
+```
+
+### 备份策略
+```bash
+#!/bin/bash
+# 数据库备份脚本
+
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backup/ldcms"
+DB_NAME="ldcms"
+DB_USER="username"
+DB_PASS="password"
+
+# 创建备份目录
+mkdir -p $BACKUP_DIR
+
+# 数据库备份
+mysqldump -u$DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/db_$DATE.sql
+
+# 文件备份
+tar -czf $BACKUP_DIR/files_$DATE.tar.gz /path/to/uploads/
+
+# 删除7天前的备份
+find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+```
+
+### 监控指标
+```php
+// 系统监控
+class SystemMonitor
+{
+    /**
+     * 检查系统状态
+     */
+    public function checkSystem()
+    {
+        return [
+            'disk_usage' => $this->getDiskUsage(),
+            'memory_usage' => $this->getMemoryUsage(),
+            'database_status' => $this->checkDatabase(),
+            'cache_status' => $this->checkCache(),
+            'api_response_time' => $this->getApiResponseTime(),
+        ];
+    }
+    
+    /**
+     * 性能统计
+     */
+    public function getPerformanceStats()
+    {
+        return [
+            'page_views' => $this->getPageViews(),
+            'api_calls' => $this->getApiCalls(),
+            'error_rate' => $this->getErrorRate(),
+            'response_time' => $this->getAverageResponseTime(),
+        ];
+    }
+}
+```
+
+### 版本更新
+```bash
+# 更新流程
+1. 备份数据库和文件
+2. 下载新版本代码
+3. 比较配置文件差异
+4. 执行数据库升级脚本
+5. 更新代码文件
+6. 清理缓存
+7. 测试功能
+8. 回滚机制（如有问题）
+
+# 自动化更新脚本
+#!/bin/bash
+VERSION=$1
+
+echo "开始更新到版本: $VERSION"
+
+# 备份
+./backup.sh
+
+# 下载新版本
+wget https://releases.com/ldcms-$VERSION.zip
+unzip ldcms-$VERSION.zip
+
+# 执行更新
+php think migrate:run
+php think cache:clear
+
+echo "更新完成"
+```
+
+---
+
+## 📋 检查清单
+
+### 开发完成检查
+- [ ] 代码符合PSR规范
+- [ ] 所有方法都有注释
+- [ ] 安全验证已实现
+- [ ] 错误处理完善
+- [ ] 单元测试通过
+- [ ] API文档已更新
+- [ ] 模板响应式测试
+- [ ] 多语言功能测试
+- [ ] 性能测试通过
+
+### 部署前检查
+- [ ] 环境配置正确
+- [ ] 数据库连接正常
+- [ ] 文件权限设置
+- [ ] 伪静态规则配置
+- [ ] SSL证书配置
+- [ ] 缓存配置启用
+- [ ] 备份策略制定
+- [ ] 监控系统配置
+
+### 上线后检查
+- [ ] 功能正常运行
+- [ ] API接口正常
+- [ ] 模板显示正常
+- [ ] 搜索功能正常
+- [ ] 表单提交正常
+- [ ] 文件上传正常
+- [ ] 多语言切换正常
+- [ ] 性能指标正常
+
+---
+
+## 📞 技术支持
+
+### 联系方式
+- **技术文档**: https://docs.ldcms.com
+- **问题反馈**: https://github.com/ldcms/issues
+- **社区论坛**: https://community.ldcms.com
+- **技术交流**: QQ群 123456789
+
+### 常见问题
+1. **安装问题**: 检查环境要求和权限设置
+2. **配置问题**: 参考配置文档和示例
+3. **性能问题**: 启用缓存和优化数据库
+4. **安全问题**: 更新到最新版本并配置防火墙
+
+---
+
+## 📄 版权说明
+
+**本文档和相关代码版权归 LDCMS 开发团队所有**
+
+- 允许在遵循开源协议的前提下使用
+- 禁止未经授权的商业用途
+- 禁止移除版权信息
+- 欢迎贡献代码和文档
+
+---
+
+*文档版本：v2.0*  
+*最后更新：2024年1月*  
+*文档维护：LDCMS开发团队*
